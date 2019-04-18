@@ -9,7 +9,9 @@ class AiPlayer
 
   def guess(fragment)
     loc = @dictionary.get_hash_location(fragment)
-    input = loc.keys.sample.to_s
+    input = loc.keys.select {|k| !loc[k]["is_end"]}
+    input = input.length == 0 ? loc.keys.sample.to_s : input.sample.to_s
+
     puts "#{@name} plays the letter #{input}"
     input
   end
