@@ -1,5 +1,5 @@
 class Game
-  attr_reader :dictionary
+  attr_reader :test_dictionary
   attr_accessor :current_player, :prev_player
 
   def initialize(players)
@@ -10,14 +10,24 @@ class Game
     @losses = Hash.new(0)
     @fragment = ""
     @dictionary = {}
+    @test_dictionary ={}
 
-    File.open(__dir__ + "/dictionary.txt") do |f|
+    File.open(__dir__ + "/test_dictionary.txt") do |f|
       f.each_line do |line|
         line = line.chomp
-        @dictionary[line] = true
+        build_dictionary(@test_dictionary, line)
       end
     end
 
+  end
+
+  def build_dictionary(hash_location, remaining_string)
+    if !remaining_string
+      hash_location["is_end"] = true
+    else
+      hash_location[remaining_string[0]] = {}
+      build_dictionary(hash_location[remaining_string[0]], remaining_string[1..-1])
+    end
   end
 
   def run
@@ -110,3 +120,7 @@ class Game
 
 end
 
+if __FILE__ == $PROGRAM_NAME
+  game = Game.new(["1", "2"])
+  p game.test_dictionary
+end
