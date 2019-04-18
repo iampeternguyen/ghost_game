@@ -2,9 +2,10 @@ class Game
   attr_reader :dictionary
   attr_accessor :current_player, :prev_player
 
-  def initialize(player1, player2)
-    @player1, @player2 = player1, player2
-    @current_player, @prev_player = @player1, @player2
+  def initialize(players)
+    @players = players
+    @remaining_players = players.clone
+    @current_player = @remaining_players[0]
     @game_over=false
     @losses = Hash.new(0)
     @fragment = ""
@@ -35,7 +36,15 @@ class Game
   end
 
   def print_scoreboard
-    puts "#{@player1.name}: #{record(@player1)} || #{@player2.name}: #{record(@player2)}"
+    puts "SCOREBOARD"
+    @players.each_with_index do |player, index|
+      if index == 0
+        print "|"
+      end
+
+      print " #{player.name}: #{record(player)} |"
+    end
+    print "\n"
   end
 
   def record(player)
@@ -48,34 +57,37 @@ class Game
     puts "Current fragment: #{@fragment}"
     take_turn
     round_over?
-    next_player! unless game_over?
+    next_player!
+    player_eliminated?
+    game_over?
+  end
+
+  def player_eliminated?
+    if @losses[@prev_player.name] == 5
+      puts "#{@prev_player.name} has been eliminated"
+      @remaining_players.slice!(@remaining_players.index(@prev_player))
+    end
   end
 
   def game_over?
-    if @losses.any? {|player, losses| losses == 5}
+    if @remaining_players.length == 1
       @game_over = true
-      puts "================="
       print_scoreboard
-      puts "#{@prev_player.name} WINS! Congratulations!"
-      puts "================="
-
+      puts "#{@remaining_players[0].name} wins the game! Congratulations!"
     end
   end
 
   def round_over?
     if @dictionary[@fragment]
       @losses[@current_player.name] += 1
-
-      puts "================="
       puts "#{@current_player.name} loses the round. #{@fragment} is a word found in the dictionary."
-      puts "================="
-
       @round_over = true
     end
   end
 
   def next_player!
-    @current_player, @prev_player = @prev_player, @current_player
+    index = (@remaining_players.index(@current_player) + 1) % @remaining_players.length
+    @current_player, @prev_player = @remaining_players[index], @current_player
   end
 
   def take_turn
@@ -92,7 +104,7 @@ class Game
   def valid_play?(string)
     fragment = @fragment+string
     @dictionary.any? do |key, value|
-      true if key.include?(fragment)
+      true if key.start_with?(fragment)
     end
   end
 
