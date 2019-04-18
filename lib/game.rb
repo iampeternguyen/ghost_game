@@ -3,15 +3,14 @@ require_relative("dictionary.rb")
 class Game
   attr_accessor :current_player, :prev_player
 
-  def initialize(players)
+  def initialize(players, dictionary = Dictionary.new)
     @players = players
     @remaining_players = players.clone
     @current_player = @remaining_players[0]
     @game_over=false
     @losses = Hash.new(0)
     @fragment = ""
-    @dictionary = Dictionary.new
-
+    @dictionary = dictionary
   end
 
   def run
@@ -90,7 +89,12 @@ class Game
   end
 
   def take_turn
-    input = @current_player.guess
+    if @current_player.type == "cpu"
+      input = @current_player.guess(@fragment)
+    else
+      input = @current_player.guess
+    end
+
     if valid_play?(input)
       @fragment += input
     else

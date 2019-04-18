@@ -2,6 +2,7 @@ class Dictionary
   attr_reader :words
   def initialize
     @words = {}
+    p "**initializing dictionary** please wait"
     File.open(__dir__ + "/dictionary.txt") do |f|
       f.each_line do |line|
         line = line.strip
