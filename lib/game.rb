@@ -1,5 +1,6 @@
+require_relative("dictionary.rb")
+
 class Game
-  attr_reader :test_dictionary
   attr_accessor :current_player, :prev_player
 
   def initialize(players)
@@ -9,27 +10,8 @@ class Game
     @game_over=false
     @losses = Hash.new(0)
     @fragment = ""
-    @dictionary = {}
-    @dictionary ={}
+    @dictionary = Dictionary.new
 
-    File.open(__dir__ + "/dictionary.txt") do |f|
-      f.each_line do |line|
-        line = line.strip
-        build_dictionary(@dictionary, line)
-      end
-    end
-
-  end
-
-  def build_dictionary(hash_location, remaining_string)
-
-    if remaining_string == ""
-      hash_location["is_end"] = true
-      return true
-    else
-      hash_location[remaining_string[0]] = {} unless hash_location[remaining_string[0]]
-      build_dictionary(hash_location[remaining_string[0]], remaining_string[1..-1])
-    end
   end
 
   def run
@@ -90,25 +72,15 @@ class Game
   end
 
   def round_over?
-    if is_word_end?(@dictionary, @fragment)
+    if is_word_end?
       @losses[@current_player.name] += 1
       puts "#{@current_player.name} loses the round. #{@fragment} is a word found in the dictionary."
       @round_over = true
     end
-
-    # if @dictionary[@fragment]
-    #   @losses[@current_player.name] += 1
-    #   puts "#{@current_player.name} loses the round. #{@fragment} is a word found in the dictionary."
-    #   @round_over = true
-    # end
   end
 
-  def is_word_end?(hash_location, remaining_string)
-    if remaining_string == ""
-      return hash_location["is_end"] != nil
-    else
-      return is_word_end?(hash_location[remaining_string[0]], remaining_string[1..-1])
-    end
+  def is_word_end?
+    @dictionary.get_hash_location(@fragment)["is_end"]
   end
 
 
@@ -128,22 +100,11 @@ class Game
   end
 
 
-  def valid_play?(string)
-    check_dictionary(@dictionary, @fragment+string)
+  def valid_play?(char)
+    @dictionary.get_hash_location(@fragment+char)
   end
-
-  def check_dictionary(hash_location, remaining_string)
-    if remaining_string == ""
-      return hash_location != nil
-    else
-      return check_dictionary(hash_location[remaining_string[0]], remaining_string[1..-1])
-    end
-  end
-
-
 end
 
 if __FILE__ == $PROGRAM_NAME
-  game = Game.new(["1", "2"])
-  p game.test_dictionary["a"]
+
 end
